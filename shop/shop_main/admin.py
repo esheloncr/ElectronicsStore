@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import Category, SubCategory, Product
+from .models import Category, Company, Product
+from .forms import ProductCreationForm
 # Register your models here.
 
 
@@ -8,10 +9,9 @@ class CategoryAdmin(admin.ModelAdmin):
     list_display = ['title']
 
 
-@admin.register(SubCategory)
-class SubCategoryAdmin(admin.ModelAdmin):
+@admin.register(Company)
+class CompanyAdmin(admin.ModelAdmin):
     list_display = [
-        'category_id',
         'title'
     ]
 
@@ -20,9 +20,14 @@ class SubCategoryAdmin(admin.ModelAdmin):
 class ProductAdmin(admin.ModelAdmin):
     list_display = [
         'category_id',
-        'sub_category_id',
+        'company_id',
         'title',
         'description',
         'price',
         'balance'
     ]
+    list_filter = [
+        'price',
+        'balance'
+    ]
+    form = ProductCreationForm
