@@ -1,11 +1,11 @@
-from django_filters import FilterSet, CharFilter, NumberFilter
-from .models import Product
+from django_filters import FilterSet, NumberFilter, ModelChoiceFilter
+from .models import Product, Category
 
 
 class ProductFilter(FilterSet):
-    title = CharFilter(field_name="title", lookup_expr="icontains")
     min_price = NumberFilter(field_name="price", lookup_expr="gte")
     max_price = NumberFilter(field_name="price", lookup_expr="lte")
+    category = ModelChoiceFilter(queryset=Category.objects.all(), field_name="category_id_id")
 
     class Meta:
         model = Product

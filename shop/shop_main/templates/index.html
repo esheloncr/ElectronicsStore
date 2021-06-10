@@ -4,8 +4,29 @@
 Главная
 {% endblock title %}
 {% block content %}
-<h1>Добро пожаловать</h1>
-<button class="order">Сортировка</button>
-<div class="query"></div>
+<div class="container">
+	<div class="row justify-content-center">
+		<h1>Добро пожаловать</h1>
+	</div>
+	<div class="row justify-content-between">
+		<div class="search">
+			<span>Поиск</span>
+			<input type="text" class="srch">
+			<select name="filters" id="flt"></select>
+			<button class='flt'>Фильтр</button>
+			<button class='rflt'>Снять фильтры</button>
+		</div>
+		<div class="ord">
+			<button class="ordering">Сортировка</button>
+			<select name="ord" id="srt">
+				<option value="ascending">По возрастанию</option>
+				<option value="descending">По убыванию</option>
+				<option value="title">По названию</option>
+				<option value="availability">По наличию</option>
+			</select>
+		</div>
+	</div>
+	<div class="row product"></div>
+</div>
 <script src="static/js/main.js"></script>
 {% endblock content %}
