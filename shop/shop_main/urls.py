@@ -1,8 +1,9 @@
-from django.urls import path
+from django.urls import path, include
 from .views import index
-
-app_name = "shop_main"
+import ElectronicsStore.shop.shop_main.api.v1.urls
+from shop_main.api.v1.urls import api_urlpatterns
 
 urlpatterns = [
-    path('', index)
+    path('', index),
+    path('api/v1/', include(api_urlpatterns))
 ]

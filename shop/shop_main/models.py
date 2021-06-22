@@ -1,5 +1,5 @@
 from django.db import models
-
+from django.contrib.auth.models import User
 # Create your models here.
 
 
@@ -33,6 +33,8 @@ class Product(models.Model):
     description = models.TextField(verbose_name="Описание")
     price = models.PositiveIntegerField(verbose_name="Стоимость")
     balance = models.PositiveIntegerField(verbose_name="Остаток")
+    photo = models.ImageField(upload_to='shop_main/static/images/', null=True, blank=True, verbose_name='Изображение',
+                              default='shop_main/static/images/default_image.png')
 
     class Meta:
         verbose_name = "Товар"

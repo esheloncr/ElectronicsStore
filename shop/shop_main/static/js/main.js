@@ -1,4 +1,8 @@
 $(document).ready(function(){
+    $('.flt').hide()
+    $('#flt').hide()
+    $('.rflt').hide()
+    $('.nchng').hide()
     let current_data;
     function debounce(fn, ms){
         let timeout;
@@ -10,9 +14,10 @@ $(document).ready(function(){
         }
     function fquery(data){
         document.querySelector('.row.product').innerHTML = ''
+        console.log(data[0].photo)
         for(let i=0; i<data.length; i++){
                     elem = document.createElement('div')
-                    elem.innerHTML =  '<h3>' + data[i].title + '</h3>' + '<p class="description">' + data[i].description + '</p>' + '<p>Цена: ' + data[i].price + '</p>' + '<p>Остаток на складе: ' + data[i].balance + '</p>'
+                    elem.innerHTML =  '<h3>' + data[i].title + '</h3>' + '<p class="description">' + data[i].description + '</p>' + '<p>Цена: ' + data[i].price + '</p>' + '<p>Остаток на складе: ' + data[i].balance + '</p>' + '<img src="' + data[i].photo + '" alt="">'
                     elem.setAttribute('class', 'pos_' + data[i].id + ' ' + 'col-6')
                     document.querySelector('.row.product').appendChild(elem)
                 }
@@ -36,7 +41,7 @@ $(document).ready(function(){
     function filter(option){
         $.ajax({
             method: 'get',
-            url: 'api/products',
+            url: 'api/v1/products',
             data: {'category': option},
             success: function(data){
                 sort(data, $('#srt').val())
@@ -46,14 +51,14 @@ $(document).ready(function(){
     }
     $.ajax({
         method: 'get',
-        url: 'api/products',
+        url: 'api/v1/products',
         success: function(data){
             fquery(data)
         }
     })
     $.ajax({
         method: 'get',
-        url: 'api/categories',
+        url: 'api/v1/categories',
         success: function(data){
             console.log(data)
             for(let i=0;i<data.length;i++){
@@ -68,7 +73,7 @@ $(document).ready(function(){
         $.ajax({
             method: 'get',
             data: data,
-            url: 'api/search',
+            url: 'api/v1/search',
             success: function(data){
                 fquery(data)
             }
@@ -84,11 +89,24 @@ $(document).ready(function(){
     $('.rflt').on('click', function(){
         $.ajax({
             method: 'get',
-            url: 'api/products',
+            url: 'api/v1/products',
             success: function(data){
                 fquery(data)
             }
         })
     })
-    // сделать блок с фильтрами, по цене: от - до, по наличию: да - нет, по компании и категории: названия
+    $('.chng').on('click', function(){
+        $('.flt').show()
+        $('#flt').show()
+        $('.rflt').show()
+        $('.chng').hide()
+        $('.nchng').show()
+    })
+    $('.nchng').on('click', function(){
+        $('.chng').show()
+        $('.flt').hide()
+        $('#flt').hide()
+        $('.rflt').hide()
+        $('.nchng').hide()
+    })
 })

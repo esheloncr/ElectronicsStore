@@ -20,7 +20,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'ULTRA MEGA DJANGO VERY SECRET KEY'
+SECRET_KEY = 'django-insecure-^skbnbaz-1^fg2%v-z40t!%g(%c%91j#+5rbk*dunpdd@e8nng'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -31,6 +31,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'shop_main',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -39,7 +40,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'django_filters',
-    'shop_main'
 ]
 
 MIDDLEWARE = [
@@ -72,19 +72,22 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'shop.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'NoNameDB',
-        'USER': 'USERNAME',
-        'PASSWORD': 'VERYVERYVERYULTAMEGASECRETPASSWORD',
-        'HOST': 'localnothost',
-        'PORT': '1606',
+        'NAME': 'shop_db',
+        'USER': 'postgres',
+        'PASSWORD': 'b4hxd6u7',
+        'HOST': '127.0.0.1',
+        'PORT': '5432',
     }
+}
+
+REST_FRAMEWORK = {
+    'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema',
 }
 
 # Password validation

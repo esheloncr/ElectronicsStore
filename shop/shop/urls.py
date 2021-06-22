@@ -15,9 +15,12 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from rest_framework.documentation import include_docs_urls
+from .schema import CoreAPISchemaGenerator
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/', include('shop_main.api_urls')),
-    path('', include('shop_main.urls'))
+    path('', include('shop_main.urls')),
+    path('doc/', include_docs_urls(title='API', authentication_classes=[], permission_classes=[],
+                                   generator_class=CoreAPISchemaGenerator)),
 ]
