@@ -14,7 +14,12 @@ $(document).ready(function(){
         }
     function fquery(data){
         document.querySelector('.row.product').innerHTML = ''
-        console.log(data[0].photo)
+        for(let i=1; i<data.page_numbers; i++){
+            elem = document.createElement('button')
+            elem.innerHTML = i
+            document.querySelector('.pagination').appendChild(elem)
+        }
+        data = data.results
         for(let i=0; i<data.length; i++){
                     elem = document.createElement('div')
                     elem.innerHTML =  '<h3>' + data[i].title + '</h3>' + '<p class="description">' + data[i].description + '</p>' + '<p>Цена: ' + data[i].price + '</p>' + '<p>Остаток на складе: ' + data[i].balance + '</p>' + '<img src="' + data[i].photo + '" alt="">'
@@ -92,6 +97,17 @@ $(document).ready(function(){
             url: 'api/v1/products',
             success: function(data){
                 fquery(data)
+            }
+        })
+    })
+    $('.pag').on('click', function(){
+        $.ajax({
+            method: 'get',
+            url: 'api/v1/products',
+            data: {'page': 2},
+            success: function(data){
+                console.log("this is DATA")
+                console.log(data)
             }
         })
     })

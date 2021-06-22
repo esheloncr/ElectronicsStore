@@ -1,9 +1,13 @@
+from collections import OrderedDict
+
 from rest_framework.generics import ListAPIView
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from shop_main.models import Category, Company, Product
 from .serializers import CategorySerializer, CompanySerializer, ProductSerializer
 from shop_main.filters import ProductFilter
+from shop_main.paginators import CustomPageNumber
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.viewsets import GenericViewSet
 from django_filters.rest_framework import DjangoFilterBackend
@@ -16,12 +20,14 @@ class ProductApiView(ListAPIView, GenericViewSet):
     serializer_class = ProductSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_class = ProductFilter
+    pagination_class = CustomPageNumber
 
 
 class ProductSearch(ListAPIView, GenericViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
     permission_classes = [AllowAny, ]
+    pagination_class = CustomPageNumber
 
     def get_queryset(self):
         return self.queryset.filter(title__icontains=self.request.GET.get("srch"))
