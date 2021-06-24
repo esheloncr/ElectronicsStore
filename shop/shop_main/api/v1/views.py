@@ -1,5 +1,3 @@
-from collections import OrderedDict
-
 from rest_framework.generics import ListAPIView
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
@@ -20,14 +18,14 @@ class ProductApiView(ListAPIView, GenericViewSet):
     serializer_class = ProductSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_class = ProductFilter
-    pagination_class = CustomPageNumber
+    pagination_class = None
 
 
 class ProductSearch(ListAPIView, GenericViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
     permission_classes = [AllowAny, ]
-    pagination_class = CustomPageNumber
+    pagination_class = None
 
     def get_queryset(self):
         return self.queryset.filter(title__icontains=self.request.GET.get("srch"))
@@ -37,12 +35,14 @@ class CategoryList(ListAPIView, GenericViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     permission_classes = [AllowAny, ]
+    pagination_class = None
 
 
 class CompanyList(ListAPIView, GenericViewSet):
     queryset = Company.objects.all()
     serializer_class = CompanySerializer
     permission_classes = [IsAuthenticated, ]
+    pagination_class = None
 
 
 class CurrentProductApiView(APIView):
