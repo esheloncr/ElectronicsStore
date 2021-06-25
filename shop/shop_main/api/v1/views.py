@@ -1,14 +1,17 @@
+from rest_framework.decorators import action
 from rest_framework.generics import ListAPIView
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from shop_main.models import Category, Company, Product
-from .serializers import CategorySerializer, CompanySerializer, ProductSerializer
+from shop_main.models import Category, Company, Product, Cart
+from .serializers import CategorySerializer, CompanySerializer, ProductSerializer, CartSerializer
 from shop_main.filters import ProductFilter
 from shop_main.paginators import CustomPageNumber
+from shop_main.cart import CartMain
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from rest_framework.viewsets import GenericViewSet
+from rest_framework.viewsets import GenericViewSet, ViewSet
 from django_filters.rest_framework import DjangoFilterBackend
+from django.shortcuts import get_list_or_404
 from django.http import Http404
 
 
@@ -19,6 +22,27 @@ class ProductApiView(ListAPIView, GenericViewSet):
     filter_backends = [DjangoFilterBackend]
     filterset_class = ProductFilter
     pagination_class = None
+
+    @action(detail=False, methods=['GET'], url_path='add/(?P<pk>[^/.]+)')
+    def add(self, request, pk):
+        cart = CartMain(request)
+        self.queryset = Product.objects.get(pk=pk)
+        add = cart.add(self.queryset)
+        return add
+
+    @action(detail=False, methods=['GET'], url_path='remove/(?P<pk>[^/.]+)')
+    def remove_one(self, request, pk):
+        cart = CartMain(request)
+        self.queryset = Product.objects.get(pk=pk)
+        remove = cart.remove_one(self.queryset)
+        return remove
+
+    @action(detail=False, methods=['GET'], url_path='rft/(?P<pk>[^/.]+)')
+    def remove_from_cart(self, request, pk):
+        cart = CartMain(request)
+        self.queryset = Product.objects.get(pk=pk)
+        remove = cart.remove_from_cart(self.queryset)
+        return remove
 
 
 class ProductSearch(ListAPIView, GenericViewSet):
@@ -45,18 +69,15 @@ class CompanyList(ListAPIView, GenericViewSet):
     pagination_class = None
 
 
-class CurrentProductApiView(APIView):
-    permission_classes = [AllowAny, ]
-    queryset = None
+class CartAPIView(ListAPIView, GenericViewSet):
+    queryset = Cart.objects.all()
+    serializer_class = CartSerializer
+    permission_classes = [AllowAny, ] # Change to auth
+    pagination_class = None
 
-    def get_object_or_404(self, pk):
-        try:
-            return Product.objects.get(pk=pk)
-        except Exception as e:
-            print(e)
-            raise Http404
-
-    def get(self, request, pk):
-        self.queryset = self.get_object_or_404(pk)
-        serializer = ProductSerializer(self.queryset)
+    def list(self, request, *args, **kwargs):
+        if not len(self.queryset):
+            return Response({"message": "Cart is empty!"})
+        queryset = self.queryset
+        serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
