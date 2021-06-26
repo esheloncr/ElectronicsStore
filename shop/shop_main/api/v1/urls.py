@@ -16,5 +16,4 @@ router.register(r"cart", CartAPIView)
 api_urlpatterns = [
     path('doc/', include_docs_urls(title='API', authentication_classes=[], permission_classes=[],
                                    generator_class=CoreAPISchemaGenerator)),
-    #path(r'products/<int:pk>/', CurrentProductApiView.as_view()),
 ] + router.urls

@@ -1,9 +1,10 @@
+from django.contrib.sessions.backends.db import SessionStore
 from rest_framework.decorators import action
 from rest_framework.generics import ListAPIView
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from shop_main.models import Category, Company, Product, Cart
+from shop_main.models import Category, Company, Product, Cart, CartID
 from .serializers import CategorySerializer, CompanySerializer, ProductSerializer, CartSerializer
 from shop_main.filters import ProductFilter
 from shop_main.paginators import CustomPageNumber
@@ -27,21 +28,21 @@ class ProductApiView(ListAPIView, GenericViewSet):
     def add(self, request, pk):
         cart = CartMain(request)
         self.queryset = Product.objects.get(pk=pk)
-        add = cart.add(self.queryset)
+        add = cart.add(self.queryset, request.session.session_key)
         return add
 
     @action(detail=False, methods=['GET'], url_path='remove/(?P<pk>[^/.]+)')
     def remove_one(self, request, pk):
         cart = CartMain(request)
         self.queryset = Product.objects.get(pk=pk)
-        remove = cart.remove_one(self.queryset)
+        remove = cart.remove_one(self.queryset, request.session.session_key)
         return remove
 
     @action(detail=False, methods=['GET'], url_path='rft/(?P<pk>[^/.]+)')
     def remove_from_cart(self, request, pk):
         cart = CartMain(request)
         self.queryset = Product.objects.get(pk=pk)
-        remove = cart.remove_from_cart(self.queryset)
+        remove = cart.remove_from_cart(self.queryset, request.session.session_key)
         return remove
 
 
@@ -75,9 +76,28 @@ class CartAPIView(ListAPIView, GenericViewSet):
     permission_classes = [AllowAny, ] # Change to auth
     pagination_class = None
 
+    def get_queryset(self):
+        key = self.get_key()
+        self.queryset = Cart.objects.filter(cart_id=key)
+        return self.queryset
+
     def list(self, request, *args, **kwargs):
-        if not len(self.queryset):
+        key = self.get_key()
+        if not key:
             return Response({"message": "Cart is empty!"})
-        queryset = self.queryset
+        sum = 0
+        # сделать отдельный метод для подсчёта суммы
+        queryset = Cart.objects.filter(cart_id=key)
+        for q in queryset:
+            sum += q.total_cost
         serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
+        return Response((serializer.data, {"sum": sum}))
+
+    def get_key(self):
+        try:
+            key = CartID.objects.get(session_key=self.request.session.session_key)
+            return key
+        except Exception as e:
+            print(e)
+            return False
+

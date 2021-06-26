@@ -45,7 +45,13 @@ class Product(models.Model):
         return self.title
 
 
+class CartID(models.Model):
+    session_key = models.CharField(max_length=255, null=True, unique=True)
+
+
 class Cart(models.Model):
-    product_id = models.ForeignKey("Product", on_delete=models.CASCADE, related_name="carts", unique=True)
+    cart_id = models.ForeignKey('CartID', on_delete=models.CASCADE, related_name="cart_ids", unique=False, null=True)
+    product_id = models.ForeignKey("Product", on_delete=models.CASCADE, related_name="carts", unique=False, null=True)
+    cost_per_item = models.PositiveIntegerField(null=True)
     total_count = models.PositiveIntegerField()
     total_cost = models.PositiveIntegerField()
