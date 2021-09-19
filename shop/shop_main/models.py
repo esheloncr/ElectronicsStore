@@ -44,6 +44,9 @@ class Product(models.Model):
     def __str__(self):
         return self.title
 
+    def get_absolute_url(self):
+        return f'product/{self.pk}'
+
 
 class CartID(models.Model):
     session_key = models.CharField(max_length=255, null=True, unique=True)
@@ -55,3 +58,23 @@ class Cart(models.Model):
     cost_per_item = models.PositiveIntegerField(null=True)
     total_count = models.PositiveIntegerField()
     total_cost = models.PositiveIntegerField()
+
+
+class Test(models.Model):
+
+    STATUS_SUCCESSFUL = "SuccessTransaction"
+    STATUS_UNSUCCESSFUL = "UnsuccessfulTransaction"
+
+    STATUSES = (
+        (STATUS_SUCCESSFUL, "Успешная транзакция"),
+        (STATUS_UNSUCCESSFUL, "Неудачная транзакция")
+    )
+    test_field = models.CharField(max_length=25, verbose_name="Статус транзакции", choices=STATUSES, default=STATUS_UNSUCCESSFUL, null=False)
+
+    @classmethod
+    def create(cls, status):
+        if status == "1":
+            test = cls(test_field=cls.STATUS_SUCCESSFUL)
+            return test
+        test = cls(test_field=cls.STATUS_UNSUCCESSFUL)
+        return test

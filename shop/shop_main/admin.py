@@ -1,8 +1,11 @@
 from django.contrib import admin
-from .models import Category, Company, Product
+from .models import Category, Company, Product, Test
 from .forms import ProductCreationForm
 # Register your models here.
 
+@admin.register(Test)
+class TestAdmin(admin.ModelAdmin):
+    list_display = ["test_field"]
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):

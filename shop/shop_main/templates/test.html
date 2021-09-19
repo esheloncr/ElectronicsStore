@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<!--<form action="" method="POST">
+    {% csrf_token %}
+    <input type="submit" value="1" name="field">
+    <input type="submit" value="0" name="field">
+</form> -->
+{% for d in data %}
+<a href="/{{ d.get_absolute_url }}">{{ d.title }}</a>
+{% endfor %}
+</body>
+</html>
