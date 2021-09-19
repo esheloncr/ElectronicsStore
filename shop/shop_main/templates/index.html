@@ -13,7 +13,7 @@
 	<div class="row justify-content-between">
 		<div class="search">
 			<span>Поиск</span>
-			<input type="text" class="srch">
+			<input type="text" class="search-input">
 		</div>
 		<div class="reg-button">
 			<button class="btn reg">Регистрация</button>
@@ -32,13 +32,17 @@
 				<select name="ord" id="srt">
 					<option value="ascending">По возрастанию</option>
 					<option value="descending">По убыванию</option>
-					<option value="title">По названию</option>
+{#					<option value="title">По названию</option>#}
 					<option value="availability">По наличию</option>
 				</select>
 		</div>
 		</div>
 	</div>
+    <div class="cart">
+        <h2>Корзина</h2>
+    </div>
 	<div class="row product"></div>
 </div>
-<script src="static/js/main.js"></script>
+    <script src="static/js/main_v2.js"></script>
+{#<script src="static/js/main.js"></script>#}
 {% endblock content %}

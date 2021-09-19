@@ -1,31 +1,3 @@
-/*let token;
-let auth_headers
-function auth(){
-    fetch('http://127.0.0.1:8000/auth/jwt/create', {
-    method: 'POST',
-    headers: {
-    'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-        username: 'esheloncr',
-        password: 'b4hxd6u7'
-    })
-    })
-    .then(data => data.json())
-    .then(data => {
-        token = data.access
-        auth_headers = {
-        Authentication: "Bearer " + token
-        }
-    })
-    return auth_headers
-} */
-// states:
-// 0 - default state - products
-// 1 - register
-// 2 - login
-// 3 - user page
-//$(document).ready(function(){
 $('.flt').hide()
 $('#flt').hide()
 $('.rflt').hide()
@@ -59,13 +31,13 @@ function fquery(data){
         document.querySelector('.pagination').appendChild(elem)
     }
     for(let i=0; i<data.length; i++){
-                check_balance(data[i].balance) ? label = "В наличии":label = "Нет в наличии";
-                data[i].photo = data[i].photo.replace('shop_main/', '')
-                elem = document.createElement('div')
-                elem.innerHTML = '<h3>' + data[i].title +'</h3>' + '<p class="description">' + data[i].description + '</p>' + '<p>Цена: ' + data[i].price + '</p>' + label + '</p>' + '<img src="' + data[i].photo + '" alt="">'
-                elem.setAttribute('class', 'pos_' + data[i].id + ' ' + 'col-6')
-                document.querySelector('.row.product').appendChild(elem)
-            }
+        check_balance(data[i].balance) ? label = "В наличии":label = "Нет в наличии";
+        data[i].photo = data[i].photo.replace('shop_main/', '')
+        elem = document.createElement('div')
+        elem.innerHTML = '<h3>' + data[i].title +'</h3>' + '<p class="description">' + data[i].description + '</p>' + '<p>Цена: ' + data[i].price + '</p>' + label + '</p>' + '<img src="' + data[i].photo + '" alt="">' + "<button class='add-to-cart'>Добавить в корзину</button>"
+        elem.setAttribute('class', 'pos_' + data[i].id + ' ' + 'col-6')
+        document.querySelector('.row.product').appendChild(elem)
+    }
     current_data = data;
 }
 function current_product(data){
@@ -141,6 +113,9 @@ function back(state){
             $('.container').show()
             break
     }   
+}
+function addToCart(){
+    cart = document.querySelector(".cart").append("Some match");
 }
 $.ajax({
     method: 'get',
@@ -325,4 +300,3 @@ $('.nchng').on('click', function(){
     $('.rflt').hide()
     $('.nchng').hide()
 })
-//})

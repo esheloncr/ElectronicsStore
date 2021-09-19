@@ -1,22 +1,16 @@
-from django.contrib.auth import get_user_model
-from django.contrib.auth.models import User
-from django.contrib.sessions.backends.db import SessionStore
+from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import action
-from rest_framework.generics import ListAPIView, CreateAPIView
-from rest_framework.pagination import PageNumberPagination
+from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
-from rest_framework.views import APIView
 from shop_main.models import Category, Company, Product, Cart, CartID, Test
 from .serializers import CategorySerializer, CompanySerializer, ProductSerializer, CartSerializer
 from shop_main.filters import ProductFilter
-from shop_main.paginators import CustomPageNumber
 from shop_main.cart import CartMain
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from rest_framework.viewsets import GenericViewSet, ViewSet, ModelViewSet
+from rest_framework.viewsets import GenericViewSet
 from django_filters.rest_framework import DjangoFilterBackend
-from django.shortcuts import get_list_or_404
-from django.http import Http404
-from django.shortcuts import render
+from django.http import JsonResponse
+from django.utils.decorators import method_decorator
 
 
 class ProductApiView(ListAPIView, GenericViewSet):
@@ -34,8 +28,10 @@ class ProductSearch(ListAPIView, GenericViewSet):
     permission_classes = [AllowAny]
     pagination_class = None
 
-    def get_queryset(self):
-        return self.queryset.filter(title__icontains=self.request.GET.get("srch"))
+    def post(self, request):
+        queryset = self.queryset.filter(title__icontains=request.POST.get("query"))
+        serializer = self.serializer_class(queryset, many=True)
+        return JsonResponse({"result": serializer.data}, safe=False)
 
 
 class CategoryList(ListAPIView, GenericViewSet):
