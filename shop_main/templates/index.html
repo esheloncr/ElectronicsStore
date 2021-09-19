@@ -24,15 +24,14 @@
 		<div class="filters">
 			<button class="chng">Показать фильтры</button>
 			<button class="nchng">Скрыть фильтры</button>
-			<select name="filters" id="flt"></select>
-			<button class='flt'>Фильтр</button>
-			<button class='rflt'>Снять фильтры</button>
+			<select name="filters" id="filters-selection"></select>
+			<button class='apply-filter'>Фильтр</button>
+			<button class='remove-filter'>Снять фильтры</button>
 			<div class="sorting">
 				<button class="ordering">Сортировка</button>
 				<select name="ord" id="srt">
 					<option value="ascending">По возрастанию</option>
 					<option value="descending">По убыванию</option>
-{#					<option value="title">По названию</option>#}
 					<option value="availability">По наличию</option>
 				</select>
 		</div>
@@ -44,5 +43,4 @@
 	<div class="row product"></div>
 </div>
     <script src="static/js/main_v2.js"></script>
-{#<script src="static/js/main.js"></script>#}
 {% endblock content %}

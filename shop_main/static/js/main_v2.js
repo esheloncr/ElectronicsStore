@@ -1,11 +1,18 @@
 let currentData;
-let sortButton = document.querySelector(".ordering")
-let sortOption = document.querySelector("#srt")
-let searchInput = document.querySelector(".search-input")
+let sortOption = document.querySelector("#srt");
+let filterOption = document.querySelector("#filters-selection");
+const productsSelector = document.querySelector(".row.product");
+const sortButton = document.querySelector(".ordering");
+const searchInput = document.querySelector(".search-input");
+const filterButton = document.querySelector(".apply-filter");
+const removeFilterButton = document.querySelector(".remove-filter");
 
 let state = {
-    sortOptionState: sortOption.value
-}
+    sortOptionState: sortOption.value,
+    filterOptionState: filterOption.value,
+    dataState: currentData,
+    focused: false
+};
 
 function drawProducts(data){
     let productListSelector = document.querySelector(".row.product");
@@ -25,9 +32,13 @@ function drawProducts(data){
         }
         let element = document.createElement("div");
         element.innerHTML = "<h3>" + title + "</h3>" + "<p>" + description +"</p>" + "<img alt='' src=" + photoUrl + ">" + "<p>Цена: " + price +"</p>" + "<p>" + balance + "</p>";
+        element.setAttribute("class", "item")
+        element.addEventListener("click", (event) => {
+            singleProduct(event.target);
+        });
         productListSelector.appendChild(element);
     }
-    currentData = data;
+    state.dataState = data;
 }
 function initialize(){
     $.ajax({
@@ -40,31 +51,41 @@ function initialize(){
             console.log(errorData);
         }
     })
+    $.ajax({
+        method: "GET",
+        url: "api/v1/categories",
+        success: (data) => {
+            data.forEach(option => {
+                newOption = "<option value=".concat(option.id).concat(">".concat(option.title)).concat("</option>") // странную вещь я вообще написал))
+                document.querySelector("#filters-selection").innerHTML += newOption;
+            })
+        }
+    })
     sortButton.addEventListener("click", (event) => {
         let sortOption = document.querySelector("#srt").value;
         if (state.sortOptionState === sortOption){
             return;
         }
-        sortProducts(currentData, sortOption);
+        sortProducts(state.dataState, sortOption);
         state.sortOptionState = sortOption;
-        drawProducts(currentData);
-        // $.ajax({
-        //     method: "GET",
-        //     url: "api/v1/products",
-        //     success: (data) => {
-        //         sortProducts(data, sortOption);
-        //         state.sortOptionState = sortOption;
-        //         drawProducts(data);
-        //     }
-        // })
+        drawProducts(state.dataState);
     })
     searchInput.addEventListener("input", debounce(() => {
         search(searchInput.value);
     },550));
-
+    filterButton.addEventListener("click", (e) => {
+        state.filterOptionState = filterOption.value;
+        filterProducts(state.filterOptionState);
+    })
+    removeFilterButton.addEventListener("click", (e) => {
+        filterProducts(null);
+    })
+    /*
+    to do:
+    Спрятать кнопку снятия фильтра до фильтрации, ограничить фильтр по одному и тому-же условию(что-бы не посылать запросы)
+     */
 }
 function sortProducts(data, option){
-    console.log(option)
     data.sort(function(a, b){
         switch (option){
             case 'ascending':
@@ -97,6 +118,47 @@ function search(query){
             drawProducts(data.result);
         }
     });
+}
+function filterProducts(option){
+    data = {
+        category: option
+    }
+    $.ajax({
+        method: "GET",
+        url: "api/v1/products",
+        data: data,
+        success: (data) => {
+            console.log(data);
+            drawProducts(data);
+        },
+        error: (errData) => {
+            console.log(errData);
+        }
+    })
+}
+function singleProduct(target){
+    if (state.focused) return;
+    target.closest("div").className = "focused";
+    document.querySelectorAll(".item").forEach(item => {
+        item.style.display = "none";
+    })
+    state.focused = true;
+    let backButton = document.createElement("button")
+    backButton.innerHTML = "Назад";
+    backButton.setAttribute("class", "back-to-products")
+    target.closest("div").appendChild(backButton);
+    backButton.addEventListener("click", (event) => {
+        unhideProducts(event);
+    })
+}
+function unhideProducts(event){
+    if (!state.focused) return;
+    event.target.closest("div").className = "item";
+    document.querySelectorAll(".item").forEach(item => {
+        item.style.display = "";
+    })
+    document.querySelector(".back-to-products").remove();
+    state.focused = false;
 }
 function debounce(fn, ms){
     let timeout;
