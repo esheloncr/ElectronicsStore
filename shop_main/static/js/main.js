@@ -1,72 +1,99 @@
-$('.flt').hide()
-$('#flt').hide()
-$('.rflt').hide()
-$('.nchng').hide()
-let current_data;
-let focused;
-let state;
-let auth_headers;
-function check_balance(sub_data){
-    if (sub_data > 1) return true;
-    else return false;
-}
-function serializer(data){
-    if (data.results) return data.results;
-    else return data;
-}
-function debounce(fn, ms){
-    let timeout;
-    return function() {
-        fnCall = () => {fn.apply(this, arguments)}
-        clearTimeout(timeout);
-        timeout = setTimeout(fnCall, ms)
+let currentData;
+let scrollYPosition;
+let scrollXPosition;
+let sortOption = document.querySelector("#srt");
+let filterOption = document.querySelector("#filters-selection");
+const productsSelector = document.querySelector(".row.product");
+const sortButton = document.querySelector(".ordering");
+const searchInput = document.querySelector(".search-input");
+const filterButton = document.querySelector(".apply-filter");
+const removeFilterButton = document.querySelector(".remove-filter");
+
+let state = {
+    sortOptionState: sortOption.value,
+    filterOptionState: filterOption.value,
+    dataState: currentData,
+    focused: false,
+    scrollPosition: {
+        x: scrollXPosition,
+        y: scrollYPosition
+    }
+};
+
+function drawProducts(data){
+    let productListSelector = document.querySelector(".row.product");
+    productListSelector.innerHTML = "";
+    for (let i=0;i<data.length; i++){
+        let balance = data[i].balance;
+        let title = data[i].title;
+        let description = data[i].description;
+        let price = data[i].price;
+        let photoUrl = data[i].photo;
+        photoUrl = photoUrl.replace("shop_main/", "")
+        if (balance > 0){
+            balance = "В наличии"
         }
+        else {
+            balance = "Нет в наличии"
+        }
+        let element = document.createElement("div");
+        element.innerHTML = "<h3>" + title + "</h3>" + "<p class='description'>" + description +"</p>" + "<img class='item-img' alt='' src=" + photoUrl + ">" + "<p>Цена: " + price +"</p>" + "<p>" + balance + "</p>";
+        element.setAttribute("class", "item")
+        element.addEventListener("click", (event) => {
+            singleProduct(event.target);
+        });
+        productListSelector.appendChild(element);
     }
-function fquery(data){
-    data = serializer(data)
-    document.querySelector('.row.product').innerHTML = ''
-    for(let i=1; i<data.page_numbers; i++){
-        elem = document.createElement('button')
-        elem.innerHTML = i
-        document.querySelector('.pagination').appendChild(elem)
-    }
-    for(let i=0; i<data.length; i++){
-        check_balance(data[i].balance) ? label = "В наличии":label = "Нет в наличии";
-        data[i].photo = data[i].photo.replace('shop_main/', '')
-        elem = document.createElement('div')
-        elem.innerHTML = '<h3>' + data[i].title +'</h3>' + '<p class="description">' + data[i].description + '</p>' + '<p>Цена: ' + data[i].price + '</p>' + label + '</p>' + '<img src="' + data[i].photo + '" alt="">' + "<button class='add-to-cart'>Добавить в корзину</button>"
-        elem.setAttribute('class', 'pos_' + data[i].id + ' ' + 'col-6')
-        document.querySelector('.row.product').appendChild(elem)
-    }
-    current_data = data;
+    state.dataState = data;
 }
-function current_product(data){
-    if (focused) return;
-    block_name = data.target.closest('div').className
-    block_name = block_name.replace(' ', '.')
-    block_name = '.' + block_name
-    $('.row.product').each(function(){
-        $(this).children('div').not($(block_name)).hide()
+function initialize(){
+    $.ajax({
+        method: "GET",
+        url: "api/v1/products",
+        success: function (data){
+            drawProducts(data);
+        },
+        error: function (errorData){
+            console.log(errorData);
+        }
     })
-    $('.container').append(
-        '<button class="focused">Назад</button>'
-    )
-    focused = true
-}
-function back_to_catalog(){
-    focused = false
-    $('.row.product').each(function(){
-        $(this).children('div').show()
+    $.ajax({
+        method: "GET",
+        url: "api/v1/categories",
+        success: (data) => {
+            data.forEach(option => {
+                newOption = "<option value=".concat(option.id).concat(">".concat(option.title)).concat("</option>") // странную вещь я вообще написал))
+                document.querySelector("#filters-selection").innerHTML += newOption;
+            })
+        }
     })
-    $('.focused').remove();
+    sortButton.addEventListener("click", (event) => {
+        let sortOption = document.querySelector("#srt").value;
+        if (state.sortOptionState === sortOption){
+            return;
+        }
+        sortProducts(state.dataState, sortOption);
+        state.sortOptionState = sortOption;
+        drawProducts(state.dataState);
+    })
+    searchInput.addEventListener("input", debounce(() => {
+        search(searchInput.value);
+    },550));
+    filterButton.addEventListener("click", (e) => {
+        state.filterOptionState = filterOption.value;
+        filterProducts(state.filterOptionState);
+    })
+    removeFilterButton.addEventListener("click", (e) => {
+        filterProducts(null);
+    })
+    /*
+    to do:
+    Спрятать кнопку снятия фильтра до фильтрации, ограничить фильтр по одному и тому-же условию(что-бы не посылать запросы)
+     */
 }
-function sort(data, option){
-    data = serializer(data)
-    if(option == 'title'){
-        data.sort()
-    }
+function sortProducts(data, option){
     data.sort(function(a, b){
-        switch(option){
+        switch (option){
             case 'ascending':
                 return a.price - b.price;
             case 'descending':
@@ -76,227 +103,91 @@ function sort(data, option){
         }
     })
 }
-function filter(option){
+function search(query){
+    if (!query){
+        $.ajax({
+            method: "GET",
+            url: "api/v1/products",
+            success: (data) => {
+                drawProducts(data);
+            }
+        })
+    }
+    let data = {
+        query: query,
+    };
     $.ajax({
-        method: 'get',
-        url: 'api/v1/products',
-        data: {'category': option},
-        success: function(data){
-            data = serializer(data)
-            sort(data, $('#srt').val())
-            fquery(data)
-        }
-    })
-}
-function register(){
-    $('.container').hide()
-    elem = document.createElement('form')
-    elem.setAttribute('class', 'register')
-    elem.innerHTML = '<span>Логин</span><input type="text" label="Логин" required minlength="6" maxlength="15">' + '<br>' + '<span>Пароль</span><input type="password" required minlength="6" maxlength="15">' + '<button style="margin-top: 25%; margin-left: 10%;">Зарегистрироваться</button>'
-    state = 1
-    document.querySelector('body').appendChild(elem)
-}
-function login(){
-    $('.container').hide()
-    elem = document.createElement('form')
-    elem.setAttribute('class', 'login')
-    elem.innerHTML = '<span>Логин</span><input type="text" label="Логин" required minlength="6" maxlength="15">' + '<br>' + '<span>Пароль</span><input type="password" required minlength="6" maxlength="15">' + '<button style="margin-top: 25%; margin-left: 10%;">Войти</button>'
-    document.querySelector('body').appendChild(elem)
-}
-function back(state){
-    switch(state){
-        case 0:
-            console.log('//')
-            break
-        case 1:
-            $('.register').remove()
-            $('.container').show()
-            break
-    }   
-}
-function addToCart(){
-    cart = document.querySelector(".cart").append("Some match");
-}
-$.ajax({
-    method: 'get',
-    url: 'api/v1/products',
-    success: function(data){
-        fquery(data)
-    }
-})
-$.ajax({
-    method: 'get',
-    url: 'api/v1/categories',
-    success: function(data){
-        data = serializer(data)
-        for(let i=0;i<data.length;i++){
-            $('#flt').append('<option value="' + data[i].id +'">' + data[i].title + '</option>')
-        }
-    }
-})
-$('.srch').on('input', debounce(function(){
-    data = {
-        'srch': $('.srch').val()
-    }
-    $.ajax({
-        method: 'get',
+        method: "POST",
+        url: "api/v1/search/",
         data: data,
-        url: 'api/v1/search',
-        success: function(data){
-            fquery(data)
+        success: (data) => {
+            drawProducts(data.result);
         }
-    })
-}, 750))
-$('.ordering').on('click', function(){
-    sort(current_data, $('#srt').val())
-    fquery(current_data)
-})
-$('.flt').on('click', function(){
-    filter($('#flt').val())
-})
-$('.rflt').on('click', function(){
-    $.ajax({
-        method: 'get',
-        url: 'api/v1/products',
-        success: function(data){
-            fquery(data)
-        }
-    })
-})
-$('.pag').on('click', function(){
-    $.ajax({
-        method: 'get',
-        url: 'api/v1/products',
-        data: {'page': 2},
-        success: function(data){
-            console.log(data)
-        }
-    })
-})
-$('.row.product').on('click', function(e){
-    current_product(e);
-})
-$(document).on('submit', '.register',function(r){
-    login = $('.register')[0][0].value
-    password = $('.register')[0][1].value
+    });
+}
+function filterProducts(option){
     data = {
-        email: "", 
-        username: login,
-        password: password,
+        category: option
     }
-    data = JSON.stringify(data)
     $.ajax({
-        method: 'POST',
-        contentType: 'application/json',
+        method: "GET",
+        url: "api/v1/products",
         data: data,
-        url: 'auth/users/',
-        success: function(data){
-            console.log(data)
-            alert('success')
-            $('.register').remove()
-            $('.container').show()
+        success: (data) => {
+            console.log(data);
+            drawProducts(data);
         },
-        error: function(jqXHR, textStatus, errorThrown){
-            console.log(jqXHR)
-            error = document.createElement('p')
-            if (jqXHR['responseJSON'] != undefined){
-                error.innerHTML = jqXHR['responseJSON']
-            }
-            if (jqXHR['responseText'] != undefined){
-                error.innerHTML = jqXHR['responseText']
-            }
-            document.querySelector('.register').appendChild(error)
+        error: (errData) => {
+            console.log(errData);
         }
     })
-    r.preventDefault()
-})
-$(document).on('submit', '.login', function(l){
-    login = $('.login')[0][0].value
-    password = $('.login')[0][1].value
-    data = {
-        username: login,
-        password: password,
-    }
-    data = JSON.stringify(data)
-    $.ajax({
-        method: 'POST',
-        contentType: 'application/json',
-        data: data,
-        url: 'auth/jwt/create/',
-        success: function(data){
-            auth_headers = {
-                'refresh': data['refresh'],
-                'access': data['access']
-            }
-            $('.login').remove()
-            $('.container').show()
-        },
-        error: function(jqXHR, textStatus, errorThrown){
-            console.log(jqXHR)
-            error = document.createElement('p')
-            if (jqXHR['responseJSON'] != undefined){
-                error.innerHTML = jqXHR['responseJSON']
-            }
-            if (jqXHR['responseText'] != undefined){
-                error.innerHTML = jqXHR['responseText']
-            }
-            document.querySelector('.login').appendChild(error)
+}
+function singleProduct(target){
+    if (state.focused) return;
+    scrollXPosition = window.scrollX;
+    scrollYPosition = window.scrollY;
+    target.closest(".description").className = "full-description";
+    target.closest("div").className = "focused";
+    document.querySelectorAll(".item").forEach(item => {
+        item.style.display = "none";
+    })
+    state.focused = true;
+    state.scrollPosition.x = scrollXPosition;
+    state.scrollPosition.y = scrollYPosition;
+    let backButton = document.createElement("button")
+    backButton.innerHTML = "Назад";
+    backButton.setAttribute("class", "back-to-products")
+    target.closest("div").appendChild(backButton);
+    backButton.addEventListener("click", (event) => {
+        unhideProducts(event);
+    })
+}
+function unhideProducts(event){
+    document.querySelector(".full-description").className = "description";
+    if (!state.focused) return;
+    event.target.closest("div").className = "item";
+    document.querySelectorAll(".item").forEach(item => {
+        item.style.display = "";
+    })
+    document.querySelector(".back-to-products").remove();
+    state.focused = false;
+    window.scrollTo(state.scrollPosition.x, state.scrollPosition.y);
+}
+function debounce(fn, ms){
+    let timeout;
+    return function() {
+        fnCall = () => {fn.apply(this, arguments)}
+        clearTimeout(timeout);
+        timeout = setTimeout(fnCall, ms)
+        }
+}
+function getCSRFToken(){
+    let splitCookie = document.cookie.split(";");
+    splitCookie.forEach(cookie => {
+        if (cookie.csrftoken) {
+            return cookie.csrftoken;
         }
     })
-    l.preventDefault()
-})
+}
 
-$(document).on('click', '.btn.reg', function(){
-    register();
-    // дописать логику кнопки "Назад"
-    state = 1;
-})
-$(document).on('click', '.btn.log', function(){
-    login();
-})
-$(document).on('click', '.focused', function(){
-    back_to_catalog();
-    state = 0;
-})
-$(document).on('click', '.btn.back-button', function(){
-    back(state);
-})
-$(document).on('click', function(e){
-    console.log(state)
-    if (state > 0 && $('.btn.back-button').length == 0) {
-        back_button = document.createElement('button')
-        back_button.innerHTML = 'Назад'
-        back_button.setAttribute('class', 'btn back-button')
-        document.querySelector('body').appendChild(back_button)
-    }
-    console.log(auth_headers['access'])
-    $.ajax({
-        method: 'get',
-        headers: {
-            Authentication: 'Token ' + auth_headers['access']
-        },
-        url: 'api/v1/cart',
-        success: function(){
-            alert("auth")
-        },
-        error: function(){
-            alert("not auth")
-        }
-     //Проверка места, куда нажал пользователь
-    })
-    //back_to_catalog()
-})
-$('.chng').on('click', function(){
-    $('.flt').show()
-    $('#flt').show()
-    $('.rflt').show()
-    $('.chng').hide()
-    $('.nchng').show()
-})
-$('.nchng').on('click', function(){
-    $('.chng').show()
-    $('.flt').hide()
-    $('#flt').hide()
-    $('.rflt').hide()
-    $('.nchng').hide()
-})
+initialize();

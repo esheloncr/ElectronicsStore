@@ -1,18 +1,54 @@
-.register {
-  height: 100px;
-  width: 100px;
-  position: absolute;
-  left: 50%;
-  margin-left: -50px;
-  top: 50%;
-  margin-top: -50px;
+@font-face {
+  font-family: 'Roboto Slob';
+  font-weight: 1500;
 }
-.login {
-  height: 100px;
-  width: 100px;
-  position: absolute;
-  left: 50%;
-  margin-left: -50px;
-  top: 50%;
-  margin-top: -50px;
+body {
+  font-family: sans-serif;
+  font-weight: 400;
+  padding: 1rem;
+}
+.row.product {
+  display: flex;
+  justify-content: space-between;
+  width: 966px;
+  flex-wrap: wrap;
+}
+.item {
+  margin: 10px;
+  width: 30%;
+  height: 700px;
+}
+.description {
+  height: 300px;
+  overflow: hidden;
+}
+.item-img {
+  width: auto;
+  height: auto;
+  max-width: 250px;
+  max-height: 250px;
+}
+.focused {
+  max-width: 500px;
+  max-height: 700px;
+}
+@media(min-width: 1024px){
+  .container{
+    margin: 0 auto;
+    max-width: 966px;
+    display: flex;
+    flex-direction: column;
+  }
+}
+@media(max-width: 414px){
+  .container{
+    margin: 0 auto;
+    max-width: 380px;
+  }
+  .row.product{
+    max-width: 380px
+  }
+  .item {
+    width: 100%;
+  }
 }
